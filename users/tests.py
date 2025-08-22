@@ -29,11 +29,30 @@ class UserTestCase(APITestCase):
 
     def test_list_users(self):
         """Проверяет получение списка пользователей."""
-
         url = reverse("users:users-list")
         response = self.client.get(url)
         data = response.json()
-        print(data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(data), 2)
 
+    def test_user_retrieve(self):
+        """Проверяет процесс просмотра одного объекта класса "Пользователь" """
+        url = reverse("users:user-retrieve", args=[self.user.pk])
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(data.get("name"), self.user.name)
+        self.assertEqual(data.get("email"), self.user.email)
+
+    def test_update_user_patch_success(self):
+        """Проверяет успешное частичное редактирование пользователя (PATCH)."""
+        url = reverse("users:user-update", kwargs={"pk": self.user.pk})
+        new_data = {
+            "name": "Петр",
+        }
+        response = self.client.patch(url, new_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json().get("name"), "Петр")
+        # Проверяем, что другие поля остались прежними
+        self.assertEqual(response.json().get("surname"), self.user.surname)
