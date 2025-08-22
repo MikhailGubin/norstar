@@ -80,4 +80,4 @@ class User(AbstractUser):
         verbose_name_plural = "Пользователи"
 
     def __str__(self):
-        return self.email
+        return f"ФИО: {self.surname} {self.name} {self.patronymic}\nДолжность: {self.position}\nПочта: {self.email}"
