@@ -76,8 +76,8 @@ class User(AbstractUser):
     REQUIRED_FIELDS = []
 
     class Meta:
-        verbose_name = "Пользователь"
-        verbose_name_plural = "Пользователи"
+        verbose_name = "Сотрудник"
+        verbose_name_plural = "Сотрудники"
 
     def __str__(self):
         return f"ФИО: {self.surname} {self.name} {self.patronymic}\nДолжность: {self.position}\nПочта: {self.email}"
