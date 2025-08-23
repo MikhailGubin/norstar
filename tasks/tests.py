@@ -36,14 +36,15 @@ class HabitTestCase(APITestCase):
             deadline=(timezone.now() + timedelta(days=7)).isoformat(),
         )
         self.task_data = {
-            "executor": self.other_user.id,
-            "task_name": "Создать модель Объект",
+            "owner": f"{self.user.id}",
+            "executor": f"{self.other_user.id}",
+            "task_name": "Создать модель Пользователь",
             "deadline": (timezone.now() + timedelta(days=7)).isoformat(),
         }
 
 
-    def test_habit_retrieve(self):
-        """Проверяет процесс просмотра одного объекта класса "Привычка" """
+    def test_task_retrieve(self):
+        """Проверяет процесс просмотра одного объекта класса "Задание" """
         url = reverse("tasks:task-retrieve", args=[self.task.pk])
 
         response = self.client.get(url)
@@ -51,3 +52,27 @@ class HabitTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(data.get("task_name"), self.task.task_name)
         self.assertEqual(data.get("owner"), self.user.id)
+
+    def test_task_create(self):
+        """Проверяет процесс создания одного объекта класса "Задание" """
+        url = reverse("tasks:task-create")
+        response = self.client.post(url, self.task_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Task.objects.all().count(), 2)
+
+        created_task = Task.objects.get(task_name=self.task_data["task_name"])
+        self.assertEqual(created_task.executor, self.other_user)
+        self.assertEqual(created_task.deadline.isoformat(), self.task_data["deadline"])
+        self.assertEqual(created_task.owner, self.user)
+        
+    def test_delete_task_success(self):
+        """Проверяет успешное удаление задания."""
+        # Используем self.task (создана в setUp)
+        url = reverse("tasks:task-delete", kwargs={"pk": self.task.pk})
+
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+        # Проверяем, что привычка действительно удалена из базы данных
+        self.assertFalse(Task.objects.filter(id=self.task.pk).exists())
