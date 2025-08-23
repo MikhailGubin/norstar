@@ -16,7 +16,7 @@ class UserTestCase(APITestCase):
         self.client.force_authenticate(user=self.user)
 
 
-        # Создание другого Пользователя
+        # Создание другого сотрудника
         self.other_user = User.objects.create(
             email="other_user@example.com",
             password="45678",

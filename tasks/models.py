@@ -31,7 +31,7 @@ class Task(models.Model):
         verbose_name="Наименование задачи",
         help_text="Укажите наименование задачи",
     )
-    deadline = models.TimeField(
+    deadline = models.DateTimeField(
         verbose_name="Срок выполнения",
         help_text="Укажите время, до которого нужно выполнить задачу",
     )
