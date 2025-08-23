@@ -101,6 +101,32 @@ class TaskDestroyAPIView(DestroyAPIView):
         return super().delete(request, *args, **kwargs)
 
 
+class BusyEmployeesAPIView(APIView):
+    """Список сотрудников с количеством активных задач"""
+
+    def get(self, request):
+        employees = User.objects.annotate(
+            active_tasks_count=Count('tasks', filter=Q(tasks__status__in=[
+                Task.status.in_process, Task.status.under_review
+            ]))
+        ).order_by('-active_tasks_count')
+
+        data = []
+        for employee in employees:
+            data.append({
+                'id': employee.id,
+                'surname': employee.get_surname(),
+                'name': employee.get_name(),
+                'patronymic': employee.get_patronymic(),
+                'email': employee.email,
+                'position': employee.position,
+                'active_tasks_count': employee.active_tasks_count,
+                'total_tasks_count': employee.tasks.count()
+            })
+
+        return Response(data)
+
+
 class ImportantTasksAPIView(APIView):
     """Важные задачи и рекомендуемые исполнители"""
 

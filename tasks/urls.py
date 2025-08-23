@@ -7,7 +7,7 @@ from tasks.views import (
     TaskOwnerListAPIView,
     TaskRetrieveAPIView,
     TaskUpdateAPIView,
-    TaskListAPIView, ImportantTasksAPIView,
+    TaskListAPIView, ImportantTasksAPIView, BusyEmployeesAPIView,
 )
 
 app_name = TasksConfig.name
@@ -19,5 +19,6 @@ urlpatterns = [
     path("create/", TaskCreateAPIView.as_view(), name="task-create"),
     path("<int:pk>/delete/", TaskDestroyAPIView.as_view(), name="task-delete"),
     path("<int:pk>/update/", TaskUpdateAPIView.as_view(), name="task-update"),
+    path('busy-employees/', BusyEmployeesAPIView.as_view(), name='busy-employees'),
     path('important-tasks/', ImportantTasksAPIView.as_view(), name='important-tasks'),
 ]

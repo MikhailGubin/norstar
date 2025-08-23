@@ -2,12 +2,8 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny
-from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework.response import Response
-from django.db.models import Count, Q
 
-from tasks.models import Task
 from users.models import User
 from users.serializer import UserSerializer
 
@@ -138,30 +134,3 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         Переопределяем метод post для применения декоратора swagger_auto_schema.
         """
         return super().post(request, *args, **kwargs)
-
-
-class BusyEmployeesAPIView(APIView):
-    """Список сотрудников с количеством активных задач"""
-
-    def get(self, request):
-
-        employees = User.objects.annotate(
-            active_tasks_count=Count('tasks', filter=Q(tasks__status__in=[
-                Task.status.in_process, Task.status.under_review
-            ]))
-        ).order_by('-active_tasks_count')
-
-        data = []
-        for employee in employees:
-            data.append({
-                'id': employee.id,
-                'surname': employee.get_surname(),
-                'name': employee.get_name(),
-                'patronymic': employee.get_patronymic(),
-                'email': employee.email,
-                'position': employee.position,
-                'active_tasks_count': employee.active_tasks_count,
-                'total_tasks_count': employee.tasks.count()
-            })
-
-        return Response(data)
