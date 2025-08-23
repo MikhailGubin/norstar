@@ -43,29 +43,36 @@ class Task(models.Model):
         verbose_name="Статус задания",
         help_text="Укажите статус задания",
     )
-    is_important = models.BooleanField(
-        default=False,
-        verbose_name="Признак важной задачи",
-        help_text="Определяет является ли задача важной, т.е. зависят ли от неё другие задачи",
+    priority = models.IntegerField(
+        default=1,
+        choices=[(1, 'Низкий'), (2, 'Средний'), (3, 'Высокий')],
+        verbose_name="Приоритет",
+        help_text="Укажите приоритет задания",
     )
-    is_main = models.BooleanField(
-        default=False,
-        verbose_name="Признак главной задачи",
-        help_text="Определяет является ли задача главной, т.е. есть ли у неё дочерние задачи",
-    )
-    related_task = models.ForeignKey(
-        "self",  # Ссылка на саму себя
-        on_delete=models.SET_NULL,
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
         null=True,
         blank=True,
-        verbose_name="Связанная задача",
-        help_text="Укажите задачу, выполнение которой связано с реализацией данной задачи.",
+        related_name='subtasks',
+        verbose_name="Родительская задача",
+        help_text="Укажите родительскую задачу"
+    )
+    time_created = models.DateTimeField(auto_now_add=True, verbose_name="Время создания")
+    time_updated = models.DateTimeField(auto_now=True, verbose_name="Время обновления")
+    time_started = models.DateTimeField(null=True, blank=True, verbose_name="Время начала работы")
+    time_completed = models.DateTimeField(null=True, blank=True, verbose_name="Время завершения")
+    description = models.TextField(
+        blank=True,
+        default='',
+        verbose_name="Описание",
+        help_text="Укажите описание задачи"
     )
 
     class Meta:
         verbose_name = "Задача"
         verbose_name_plural = "Задачи"
-        # Уникальность связки пользователь-действие-время-место, если нужно избежать дубликатов
+        # Уникальность совокупности полей, если нужно избежать дубликатов
         unique_together = ("owner", "executor", "task_name", "deadline")
 
     def __str__(self):

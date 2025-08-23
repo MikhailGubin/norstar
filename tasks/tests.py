@@ -7,7 +7,7 @@ from datetime import timedelta
 from tasks.models import Task
 from users.models import User
 
-class HabitTestCase(APITestCase):
+class TaskTestCase(APITestCase):
 
     def setUp(self):
         """Создает базовый набор параметров для тестов для модели "Задание" """
@@ -76,3 +76,17 @@ class HabitTestCase(APITestCase):
 
         # Проверяем, что привычка действительно удалена из базы данных
         self.assertFalse(Task.objects.filter(id=self.task.pk).exists())
+        
+    def test_create_task_validation_error_duration(self):
+        """Проверяет создание задания с недопустимым сроком сдачи."""
+        url = reverse("tasks:task-create")
+
+        self.task_data["deadline"] = timezone.now().isoformat()
+        response = self.client.post(url, self.task_data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("deadline", response.json())
+        self.assertIn(
+            "Время сдачи выполненного задания должно превышать текущее время не менее, чем на 1 час",
+            response.json()["deadline"]
+        )

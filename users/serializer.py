@@ -9,3 +9,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "email", "name", "surname", "patronymic", "position", "password", "avatar", "phone", "city")
+        validators = [
+            serializers.UniqueTogetherValidator(
+                fields=["email", "name", "surname", "patronymic",],
+                queryset=User.objects.all()),
+        ]
