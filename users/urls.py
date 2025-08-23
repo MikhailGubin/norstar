@@ -9,7 +9,7 @@ from users.views import (
     UserDestroyAPIView,
     UserListAPIView,
     UserRetrieveAPIView,
-    UserUpdateAPIView,
+    UserUpdateAPIView, BusyEmployeesAPIView,
 )
 
 app_name = UsersConfig.name
@@ -38,4 +38,5 @@ urlpatterns = [
         CustomTokenRefreshView.as_view(permission_classes=(AllowAny,)),
         name="token-refresh",
     ),
+    path('busy-employees/', BusyEmployeesAPIView.as_view(), name='busy-employees'),
 ]

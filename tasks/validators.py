@@ -3,6 +3,9 @@ from datetime import timedelta
 from rest_framework.serializers import ValidationError
 from django.utils import timezone
 
+from tasks.models import Task
+
+
 class DeadlineValidator:
     """ Проверяет, что время сдачи выполненного задания не может быть раньше, чем через час после создания задания """
     def __init__(self, field):
@@ -18,3 +21,17 @@ class DeadlineValidator:
         if time_finished < (time_now + timedelta(hours=1)):  # duration - это минуты
             raise ValidationError({"deadline":
                "Время сдачи выполненного задания должно превышать текущее время не менее, чем на 1 час"})
+
+
+class ParentTaskValidator:
+    """Проверяет корректность родительской задачи"""
+
+    def __init__(self, field):
+        self.field = field
+
+    def __call__(self, value):
+        parent = dict(value).get(self.field)
+        if parent and parent.status == Task.Status.completed:
+            raise ValidationError(
+                "Нельзя назначить родительской задачей уже выполненную задачу"
+            )

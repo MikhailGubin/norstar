@@ -1,5 +1,6 @@
+from django.utils import timezone
 from django.db import models
-
+from rest_framework.serializers import ValidationError
 
 class Task(models.Model):
     """Модель 'Задание'"""
@@ -78,3 +79,40 @@ class Task(models.Model):
     def __str__(self):
         return (f"Задача: {self.task_name},\nАвтор задачи: {self.owner.email},\nИсполнитель: {self.executor.email},\n"
                 f"Срок выполнения: до {self.deadline}")
+
+    def clean(self):
+        """Валидация на уровне модели"""
+        errors = {}
+
+        # Валидация родительской задачи (защита от циклических зависимостей)
+        if self.parent:
+            current = self.parent
+            while current:
+                if current == self:
+                    errors['parent'] = 'Нельзя создать циклическую зависимость задач'
+                    break
+                current = current.parent
+
+        # Валидация статусов
+        if self.status == self.Status.IN_PROGRESS and not self.time_started:
+            self.time_started = timezone.now()
+
+        if self.status == self.Status.COMPLETED and not self.time_completed:
+            self.time_completed = timezone.now()
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Вызов валидации
+        super().save(*args, **kwargs)
+
+    @property
+    def is_active(self):
+        """Задача считается активной, если она в работе или на проверке"""
+        return self.status in [self.Status.IN_PROGRESS, self.Status.REVIEW]
+
+    @property
+    def has_active_dependencies(self):
+        """Есть ли активные зависимые задачи"""
+        return self.subtasks.filter(status__in=[Task.Status.IN_PROGRESS, Task.Status.REVIEW]).exists()
