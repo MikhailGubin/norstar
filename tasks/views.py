@@ -140,7 +140,6 @@ class ImportantTasksAPIView(APIView):
         ).distinct()
 
         # 2. Получаем статистику загрузки сотрудников
-        from users.models import User
         employee_stats = User.objects.annotate(
             active_tasks_count=Count('executor_tasks', filter=Q(executor_tasks__status__in=[
                 Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
@@ -154,6 +153,7 @@ class ImportantTasksAPIView(APIView):
         for task in important_tasks:
             # 3. Находим потенциальных исполнителей
             potential_executors = []
+            added_emails = set()
 
             # Вариант 1: Исполнитель родительской задачи
             if task.parent and task.parent.executor:
@@ -162,8 +162,12 @@ class ImportantTasksAPIView(APIView):
                     (stat['active_tasks_count'] for stat in employee_stats
                      if stat['id'] == parent_executor.id), 0
                 )
-                if executor_load <= min_load + 2:  # Не более чем на 2 задачи больше
-                    potential_executors.append(parent_executor.email)
+                if (executor_load <= min_load + 2 and
+                        parent_executor != task.executor and
+                        parent_executor != task.owner and
+                        parent_executor.email not in added_emails):
+                    potential_executors.append(parent_executor)
+                    added_emails.add(parent_executor.email)
 
             # Вариант 2: Наименее загруженные сотрудники
             least_loaded_employees = User.objects.annotate(
@@ -172,20 +176,17 @@ class ImportantTasksAPIView(APIView):
                 ]))
             ).filter(active_tasks_count__lte=min_load + 2).order_by('active_tasks_count')
 
-            for employee in least_loaded_employees[:3]:  # Топ-3 наименее загруженных
-                if employee.email not in potential_executors:
-                    potential_executors.append(employee.email)
+            for employee in least_loaded_employees[:5]:
+                if employee != task.executor and employee.email not in added_emails:
+                    potential_executors.append(
+                        f"{employee.surname} {employee.name} {employee.patronymic}".strip()
+                    )
+                    added_emails.add(employee.email)
 
             result.append({
-                'task_id': task.id,
-                'task_name': task.name,
-                'deadline': task.deadline,
-                'potential_executors': potential_executors,
-                'dependency_count': task.subtasks.filter(
-                    status__in=[
-                        Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
-                    ]
-                ).count()
+                'Важная задача': task.task_name,
+                'Срок до': task.deadline.strftime('%Y-%m-%d %H:%M:%S'),
+                'Возможные исполнители': potential_executors,
             })
 
         return Response(result)
