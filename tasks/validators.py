@@ -31,7 +31,7 @@ class ParentTaskValidator:
 
     def __call__(self, value):
         parent = dict(value).get(self.field)
-        if parent and parent.status == Task.Status.completed:
+        if parent and parent.status == Task.Status.COMPLETED:
             raise ValidationError(
                 "Нельзя назначить родительской задачей уже выполненную задачу"
             )

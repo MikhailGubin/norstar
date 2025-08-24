@@ -5,14 +5,13 @@ from rest_framework.serializers import ValidationError
 class Task(models.Model):
     """Модель 'Задание'"""
 
-    STATUS_CHOICES = [
-        ('created', 'создана'),
-        ('needs_clarification', 'требует уточнения'),
-        ('in_process', 'в работе'),
-        ('under_review', 'на проверке'),
-        ('completed', 'выполнена'),
-        ('cancelled', 'отменена'),
-    ]
+    class Status(models.TextChoices):
+        CREATED = 'created', 'создана'
+        NEEDS_CLARIFICATION = 'needs_clarification', 'требует уточнения'
+        IN_PROCESS = 'in_process', 'в работе'
+        UNDER_REVIEW = 'under_review', 'на проверке'
+        COMPLETED = 'completed', 'выполнена'
+        CANCELLED = 'cancelled', 'отменена'
 
     owner = models.ForeignKey(
         "users.User",
@@ -38,9 +37,8 @@ class Task(models.Model):
     )
     status = models.CharField(
         max_length=30,
-        choices=STATUS_CHOICES,
-        blank=True,  # Разрешаем пустое значение
-        default='created',  # Значение по умолчанию
+        choices=Status.choices,
+        default=Status.CREATED,
         verbose_name="Статус задания",
         help_text="Укажите статус задания",
     )
@@ -94,7 +92,7 @@ class Task(models.Model):
                 current = current.parent
 
         # Валидация статусов
-        if self.status == self.Status.IN_PROGRESS and not self.time_started:
+        if self.status == self.Status.IN_PROCESS and not self.time_started:
             self.time_started = timezone.now()
 
         if self.status == self.Status.COMPLETED and not self.time_completed:
@@ -110,9 +108,21 @@ class Task(models.Model):
     @property
     def is_active(self):
         """Задача считается активной, если она в работе или на проверке"""
-        return self.status in [self.Status.IN_PROGRESS, self.Status.REVIEW]
+        return self.status in [
+            self.Status.IN_PROCESS,
+            self.Status.UNDER_REVIEW,
+            self.Status.NEEDS_CLARIFICATION
+        ]
+
+    @property
+    def is_final(self):
+        """Задача в конечном статусе"""
+        return self.status in [
+            self.Status.COMPLETED,
+            self.Status.CANCELLED
+        ]
 
     @property
     def has_active_dependencies(self):
         """Есть ли активные зависимые задачи"""
-        return self.subtasks.filter(status__in=[Task.Status.IN_PROGRESS, Task.Status.REVIEW]).exists()
+        return self.subtasks.filter(status__in=[Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW]).exists()
