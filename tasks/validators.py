@@ -35,3 +35,18 @@ class ParentTaskValidator:
             raise ValidationError(
                 "Нельзя назначить родительской задачей уже выполненную задачу"
             )
+
+
+class ExecutorTaskValidator:
+
+    def __init__(self, field, instance):
+        self.field = field
+        self.instance = instance
+
+    def __call__(self, value):
+        executor = value
+        if self.instance and self.instance.status == Task.Status.IN_PROCESS:
+            if executor and executor != self.instance.executor:
+                raise ValidationError({
+                    'executor': 'Нельзя менять исполнителя для задачи в работе'
+                })

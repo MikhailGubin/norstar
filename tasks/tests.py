@@ -45,8 +45,16 @@ class TaskTestCase(APITestCase):
             "executor": f"{self.other_user.id}",
             "task_name": "Создать модель Пользователь",
             "deadline": (timezone.now() + timedelta(days=7)).isoformat(),
+            "status": f"{Task.Status.IN_PROCESS}"
         }
-
+        # Создаем задачи (в работе)
+        self.task1 = Task.objects.create(
+            task_name="Дочерняя задача 1",
+            owner=self.user,
+            executor=self.other_user,
+            deadline=timezone.now() + timedelta(days=3),
+            status=Task.Status.IN_PROCESS
+        )
 
     def test_task_retrieve(self):
         """Проверяет процесс просмотра одного объекта класса "Задание" """
@@ -64,7 +72,7 @@ class TaskTestCase(APITestCase):
         response = self.client.post(url, self.task_data, format="json")
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Task.objects.all().count(), 2)
+        self.assertEqual(Task.objects.all().count(), 3)
 
         created_task = Task.objects.get(task_name=self.task_data["task_name"])
         self.assertEqual(created_task.executor, self.other_user)
@@ -95,6 +103,14 @@ class TaskTestCase(APITestCase):
             "Время сдачи выполненного задания должно превышать текущее время не менее, чем на 1 час",
             response.json()["deadline"]
         )
+
+    def test_task_update(self):
+        """Проверяет процесс создания одного объекта класса "Задание" """
+        url = reverse("tasks:task-update", args=(self.task1.pk,))
+        data = {"executor": 2}
+        response = self.client.patch(url, data, format="json")
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class BusyEmployeesAPITestCase(APITestCase):

@@ -112,8 +112,13 @@ SIMPLE_JWT = {
 ALLOWED_HOSTS = ["*"]
 
 SWAGGER_SETTINGS = {
+    'USE_SESSION_AUTH': False,
     "SECURITY_DEFINITIONS": {
         "Basic": {"type": "basic"},
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"},
-    }
+    },
+    'APIS_SORTER': 'alpha',
+    'OPERATIONS_SORTER': 'alpha',
+    'DOC_EXPANSION': 'none',
+    'DEFAULT_INFO': 'config.urls.swagger_info',
 }

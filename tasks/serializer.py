@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from tasks.models import Task
-from tasks.validators import DeadlineValidator, ParentTaskValidator
+from tasks.validators import DeadlineValidator, ParentTaskValidator, ExecutorTaskValidator
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -30,15 +30,12 @@ class TaskSerializer(serializers.ModelSerializer):
         read_only_fields = ["owner", 'time_created', 'time_updated', 'time_started', 'time_completed']
         validators = [
             DeadlineValidator(field="deadline"),
-            ParentTaskValidator(field="parent")
+            ParentTaskValidator(field="parent"),
         ]
 
-        def validate(self, data):
-            """ Проверка, что исполнитель не меняется для задачи в работе """
-            instance = self.instance
-            if instance and instance.status == Task.Status.IN_PROCESS:
-                if 'executor' in data and data['executor'] != instance.executor:
-                    raise serializers.ValidationError({
-                        'executor': 'Нельзя менять исполнителя для задачи в работе'
-                    })
-            return data
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["executor"].validators.append(
+            ExecutorTaskValidator(field="executor", instance=self.instance)
+        )
