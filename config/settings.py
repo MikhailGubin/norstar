@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "users",
     "tasks",
     "rest_framework",
+    "drf_yasg"
 
 ]
 
