@@ -108,7 +108,7 @@ class BusyEmployeesAPITestCase(APITestCase):
             name="Иван",
             surname="Иванов",
             patronymic="Иванович",
-            position="Разработчик",
+            position="employee",
             password="45678",
         )
 
@@ -117,7 +117,7 @@ class BusyEmployeesAPITestCase(APITestCase):
             name="Петр",
             surname="Петров",
             patronymic="Петрович",
-            position="Аналитик",
+            position="employee",
             password="45678",
         )
 
@@ -126,7 +126,7 @@ class BusyEmployeesAPITestCase(APITestCase):
             name="Сидор",
             surname="Сидоров",
             patronymic="Сидорович",
-            position="Тестировщик",
+            position="employee",
             password="45678",
         )
 
@@ -143,7 +143,7 @@ class BusyEmployeesAPITestCase(APITestCase):
             task_name="Активная задача 2",
             executor=self.user1,
             deadline=timezone.now() + timedelta(days=3),
-            status=Task.Status.UNDER_UNDER_REVIEW,
+            status=Task.Status.UNDER_REVIEW,
             owner = self.user,
         )
 
@@ -230,7 +230,7 @@ class ImportantTasksAPITestCase(APITestCase):
             name="Иван",
             surname="Иванов",
             patronymic="Иванович",
-            position="Разработчик",
+            position="employee",
             password="12345",
         )
 
@@ -239,7 +239,7 @@ class ImportantTasksAPITestCase(APITestCase):
             name="Петр",
             surname="Петров",
             patronymic="Петрович",
-            position="Аналитик",
+            position="employee",
             password="12345",
         )
 
@@ -248,7 +248,7 @@ class ImportantTasksAPITestCase(APITestCase):
             name="Сидор",
             surname="Сидоров",
             patronymic="Сидорович",
-            position="Тестировщик",
+            position="employee",
             password="12345",
         )
 
