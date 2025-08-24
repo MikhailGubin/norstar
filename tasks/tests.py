@@ -12,9 +12,13 @@ class TaskTestCase(APITestCase):
     def setUp(self):
         """Создает базовый набор параметров для тестов для модели "Задание" """
         # Создание Пользователя
-        self.user = User.objects.create(email="admin@example.com")
-        self.user.set_password("12345")
-        self.user.save()
+        self.user = User.objects.create(
+            email="admin@example.com",
+            name="Александр",
+            surname="Александров",
+            patronymic="Александрович",
+            password="12345",
+        )
         self.client.force_authenticate(user=self.user)
 
         # Создание другого сотрудника
@@ -97,9 +101,13 @@ class BusyEmployeesAPITestCase(APITestCase):
     def setUp(self):
         """Создание тестовых данных"""
         # Создание авторизованного пользователя
-        self.user = User.objects.create(email="admin@example.com")
-        self.user.set_password("12345")
-        self.user.save()
+        self.user = User.objects.create(
+            email="admin@example.com",
+            name="Александр",
+            surname="Александров",
+            patronymic="Александрович",
+            password="12345",
+        )
         self.client.force_authenticate(user=self.user)
         
         # Создаем сотрудников
@@ -221,8 +229,6 @@ class ImportantTasksAPITestCase(APITestCase):
             patronymic="Александрович",
             password = "12345",
         )
-        self.user.set_password("12345")
-        self.user.save()
         self.client.force_authenticate(user=self.user)
         # Создаем сотрудников
         self.user1 = User.objects.create(
