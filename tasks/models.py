@@ -18,13 +18,14 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         verbose_name="Автор задания",
         help_text="Укажите автора задания",
-        related_name="tasks",
+        related_name="owner_tasks",
     )
     executor = models.ForeignKey(
         "users.User",
         on_delete=models.CASCADE,
         verbose_name="Исполнитель",
         help_text="Укажите исполнителя задания",
+        related_name="executor_tasks",
     )
     task_name = models.CharField(
         max_length=200,
@@ -125,4 +126,7 @@ class Task(models.Model):
     @property
     def has_active_dependencies(self):
         """Есть ли активные зависимые задачи"""
-        return self.subtasks.filter(status__in=[Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW]).exists()
+        return self.subtasks.filter(status__in=[
+            Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
+        ]
+        ).exists()

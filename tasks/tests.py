@@ -143,7 +143,7 @@ class BusyEmployeesAPITestCase(APITestCase):
             task_name="Активная задача 2",
             executor=self.user1,
             deadline=timezone.now() + timedelta(days=3),
-            status=Task.Status.UNDER_REVIEW,
+            status=Task.Status.UNDER_UNDER_REVIEW,
             owner = self.user,
         )
 
@@ -163,53 +163,215 @@ class BusyEmployeesAPITestCase(APITestCase):
             owner=self.user,
         )
 
-    def test_busy_employees_endpoint_accessible(self):
-        """Проверяет, что эндпоинт доступен"""
+    def test_busy_employees_ordering(self):
+        """Проверяет правильность сортировки по количеству активных задач"""
         url = reverse("tasks:busy-employees")
         response = self.client.get(url)
+        data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-    # 
-    # def test_busy_employees_ordering(self):
-    #     """Проверяет правильность сортировки по количеству активных задач"""
-    #     url = reverse('busy-employees')
-    #     response = self.client.get(url)
-    #     data = response.json()
-    # 
-    #     # user1: 2 активные задачи, user2: 1 активная задача, user3: 0 активных задач
-    #     self.assertEqual(len(data), 3)
-    #     self.assertEqual(data[0]['active_tasks_count'], 2)  # user1
-    #     self.assertEqual(data[1]['active_tasks_count'], 1)  # user2  
-    #     self.assertEqual(data[2]['active_tasks_count'], 0)  # user3
-    # 
-    #     # Проверяем, что user1 первый в списке (наиболее загружен)
-    #     self.assertEqual(data[0]['email'], 'user1@example.com')
-    #     self.assertEqual(data[0]['active_tasks_count'], 2)
-    #     self.assertEqual(data[0]['total_tasks_count'], 2)
-    # 
-    # def test_busy_employees_data_structure(self):
-    #     """Проверяет структуру возвращаемых данных"""
-    #     url = reverse('busy-employees')
-    #     response = self.client.get(url)
-    #     data = response.json()
-    # 
-    #     # Проверяем наличие всех необходимых полей
-    #     employee = data[0]
-    #     self.assertIn('id', employee)
-    #     self.assertIn('name', employee)
-    #     self.assertIn('email', employee)
-    #     self.assertIn('position', employee)
-    #     self.assertIn('active_tasks_count', employee)
-    #     self.assertIn('total_tasks_count', employee)
-    # 
-    # def test_busy_employees_no_tasks(self):
-    #     """Проверяет корректную работу при отсутствии задач"""
-    #     Task.objects.all().delete()
-    # 
-    #     url = reverse('busy-employees')
-    #     response = self.client.get(url)
-    #     data = response.json()
-    # 
-    #     # Все сотрудники должны иметь 0 активных задач
-    #     for employee in data:
-    #         self.assertEqual(employee['active_tasks_count'], 0)
-    #         self.assertEqual(employee['total_tasks_count'], 0)
+        # user1: 2 активные задачи, user2: 1 активная задача, user3: 0 активных задач
+        self.assertEqual(len(data), 4)
+        self.assertEqual(data[0]['active_tasks_count'], 2)  # user1
+        self.assertEqual(data[1]['active_tasks_count'], 1)  # user2
+        self.assertEqual(data[2]['active_tasks_count'], 0)  # user3
+
+        # Проверяем, что user1 первый в списке (наиболее загружен)
+        self.assertEqual(data[0]['email'], 'user1@example.com')
+        self.assertEqual(data[0]['active_tasks_count'], 2)
+        self.assertEqual(data[0]['total_tasks_count'], 2)
+
+    def test_busy_employees_data_structure(self):
+        """Проверяет структуру возвращаемых данных"""
+        url = reverse("tasks:busy-employees")
+        response = self.client.get(url)
+        data = response.json()
+
+        # Проверяем наличие всех необходимых полей
+        employee = data[0]
+        self.assertIn('id', employee)
+        self.assertIn('name', employee)
+        self.assertIn('email', employee)
+        self.assertIn('position', employee)
+        self.assertIn('active_tasks_count', employee)
+        self.assertIn('total_tasks_count', employee)
+
+    def test_busy_employees_no_tasks(self):
+        """Проверяет корректную работу при отсутствии задач"""
+        Task.objects.all().delete()
+
+        url = reverse("tasks:busy-employees")
+        response = self.client.get(url)
+        data = response.json()
+
+        # Все сотрудники должны иметь 0 активных задач
+        for employee in data:
+            self.assertEqual(employee['active_tasks_count'], 0)
+            self.assertEqual(employee['total_tasks_count'], 0)
+
+
+# class ImportantTasksAPITestCase(APITestCase):
+#
+#     def setUp(self):
+#         """Создание сложной структуры задач для тестирования"""
+#         # Создаем сотрудников
+#         self.user1 = User.objects.create(
+#             email="user1@example.com",
+#             name="Иван",
+#             surname="Иванов",
+#             position="Разработчик"
+#         )
+#
+#         self.user2 = User.objects.create(
+#             email="user2@example.com",
+#             name="Петр",
+#             surname="Петров",
+#             position="Аналитик"
+#         )
+#
+#         self.user3 = User.objects.create(
+#             email="user3@example.com",
+#             name="Сидор",
+#             surname="Сидоров",
+#             position="Тестировщик"
+#         )
+#
+#         # Создаем родительские задачи (не в работе)
+#         self.parent_task1 = Task.objects.create(
+#             name="Родительская задача 1",
+#             executor=self.user1,
+#             deadline=timezone.now() + timedelta(days=7),
+#             status=Task.Status.CREATED
+#         )
+#
+#         self.parent_task2 = Task.objects.create(
+#             name="Родительская задача 2",
+#             executor=self.user2,
+#             deadline=timezone.now() + timedelta(days=5),
+#             status=Task.Status.CREATED
+#         )
+#
+#         # Создаем дочерние задачи (в работе)
+#         self.child_task1 = Task.objects.create(
+#             name="Дочерняя задача 1",
+#             executor=self.user1,
+#             parent=self.parent_task1,
+#             deadline=timezone.now() + timedelta(days=3),
+#             status=Task.Status.IN_PROCESS
+#         )
+#
+#         self.child_task2 = Task.objects.create(
+#             name="Дочерняя задача 2",
+#             executor=self.user2,
+#             parent=self.parent_task1,
+#             deadline=timezone.now() + timedelta(days=2),
+#             status=Task.Status.UNDER_REVIEW
+#         )
+#
+#         self.child_task3 = Task.objects.create(
+#             name="Дочерняя задача 3",
+#             executor=self.user3,
+#             parent=self.parent_task2,
+#             deadline=timezone.now() + timedelta(days=1),
+#             status=Task.Status.IN_PROCESS
+#         )
+#
+#         # Создаем независимую задачу (не должна попасть в важные)
+#         self.independent_task = Task.objects.create(
+#             name="Независимая задача",
+#             executor=self.user1,
+#             deadline=timezone.now() + timedelta(days=4),
+#             status=Task.Status.CREATED
+#         )
+#
+#     def test_important_tasks_endpoint_accessible(self):
+#         """Проверяет, что эндпоинт доступен"""
+#         url = reverse('important-tasks')
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
+#
+#     def test_important_tasks_filtering(self):
+#         """Проверяет правильность фильтрации важных задач"""
+#         url = reverse('important-tasks')
+#         response = self.client.get(url)
+#         data = response.json()
+#
+#         # Должны найтись 2 важные задачи
+#         self.assertEqual(len(data), 2)
+#
+#         # Проверяем, что независимая задача не попала в список
+#         task_names = [task['task_name'] for task in data]
+#         self.assertNotIn('Независимая задача', task_names)
+#
+#         # Проверяем, что родительские задачи найдены
+#         self.assertIn('Родительская задача 1', task_names)
+#         self.assertIn('Родительская задача 2', task_names)
+#
+#     def test_important_tasks_data_structure(self):
+#         """Проверяет структуру возвращаемых данных"""
+#         url = reverse('important-tasks')
+#         response = self.client.get(url)
+#         data = response.json()
+#
+#         task = data[0]
+#         self.assertIn('task_id', task)
+#         self.assertIn('task_name', task)
+#         self.assertIn('deadline', task)
+#         self.assertIn('potential_executors', task)
+#         self.assertIn('dependency_count', task)
+#
+#         # potential_executors должен быть списком
+#         self.assertIsInstance(task['potential_executors'], list)
+#
+#     def test_important_tasks_potential_executors(self):
+#         """Проверяет логику подбора потенциальных исполнителей"""
+#         url = reverse('important-tasks')
+#         response = self.client.get(url)
+#         data = response.json()
+#
+#         # Для родительской задачи 1 (у user1 уже 1 активная задача)
+#         task1 = next(t for t in data if t['task_name'] == 'Родительская задача 1')
+#
+#         # Должны быть предложены исполнители (user2 или user3 как менее загруженные)
+#         self.assertGreater(len(task1['potential_executors']), 0)
+#
+#         # Проверяем, что исполнитель текущей задачи не предлагается
+#         current_executor = f"{self.user1.surname} {self.user1.name}"
+#         self.assertNotIn(current_executor, task1['potential_executors'])
+#
+#     def test_important_tasks_dependency_count(self):
+#         """Проверяет подсчет количества зависимостей"""
+#         url = reverse('important-tasks')
+#         response = self.client.get(url)
+#         data = response.json()
+#
+#         # Родительская задача 1 имеет 2 активные зависимости
+#         task1 = next(t for t in data if t['task_name'] == 'Родительская задача 1')
+#         self.assertEqual(task1['dependency_count'], 2)
+#
+#         # Родительская задача 2 имеет 1 активную зависимость
+#         task2 = next(t for t in data if t['task_name'] == 'Родительская задача 2')
+#         self.assertEqual(task2['dependency_count'], 1)
+#
+#     def test_important_tasks_no_dependencies(self):
+#         """Проверяет работу при отсутствии зависимостей"""
+#         # Удаляем все дочерние задачи
+#         Task.objects.filter(parent__isnull=False).delete()
+#
+#         url = reverse('important-tasks')
+#         response = self.client.get(url)
+#         data = response.json()
+#
+#         # Не должно быть важных задач
+#         self.assertEqual(len(data), 0)
+#
+#     def test_important_tasks_all_dependencies_completed(self):
+#         """Проверяет, что задачи с завершенными зависимостями не считаются важными"""
+#         # Меняем статус дочерних задач на "Выполнено"
+#         Task.objects.filter(parent__isnull=False).update(status=Task.Status.COMPLETED)
+#
+#         url = reverse('important-tasks')
+#         response = self.client.get(url)
+#         data = response.json()
+#
+#         # Не должно быть важных задач
+#         self.assertEqual(len(data), 0)

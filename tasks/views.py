@@ -106,8 +106,8 @@ class BusyEmployeesAPIView(APIView):
 
     def get(self, request):
         employees = User.objects.annotate(
-            active_tasks_count=Count('tasks', filter=Q(tasks__status__in=[
-                Task.status.in_process, Task.status.under_review
+            active_tasks_count=Count('executor_tasks', filter=Q(executor_tasks__status__in=[
+                Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
             ]))
         ).order_by('-active_tasks_count')
 
@@ -115,13 +115,13 @@ class BusyEmployeesAPIView(APIView):
         for employee in employees:
             data.append({
                 'id': employee.id,
-                'surname': employee.get_surname(),
-                'name': employee.get_name(),
-                'patronymic': employee.get_patronymic(),
+                'surname': employee.surname,
+                'name': employee.name,
+                'patronymic': employee.patronymic,
                 'email': employee.email,
                 'position': employee.position,
                 'active_tasks_count': employee.active_tasks_count,
-                'total_tasks_count': employee.tasks.count()
+                'total_tasks_count': employee.executor_tasks.count()
             })
 
         return Response(data)
@@ -133,15 +133,17 @@ class ImportantTasksAPIView(APIView):
     def get(self, request):
         # 1. Находим важные задачи
         important_tasks = Task.objects.filter(
-            status=Task.status.created,  # Не взяты в работу
-            subtasks__status__in=[Task.status.in_process, Task.status.under_review]  # Зависимости в работе
+            status=Task.Status.CREATED,  # Не взяты в работу
+            subtasks__status__in=[
+                Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
+            ]  # Зависимости в работе
         ).distinct()
 
         # 2. Получаем статистику загрузки сотрудников
         from users.models import User
         employee_stats = User.objects.annotate(
-            active_tasks_count=Count('tasks', filter=Q(tasks__status__in=[
-                Task.status.in_process, Task.status.under_review
+            active_tasks_count=Count('executor_tasks', filter=Q(executor_tasks__status__in=[
+                Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
             ]))
         ).values('id', 'active_tasks_count')
 
@@ -161,18 +163,18 @@ class ImportantTasksAPIView(APIView):
                      if stat['id'] == parent_executor.id), 0
                 )
                 if executor_load <= min_load + 2:  # Не более чем на 2 задачи больше
-                    potential_executors.append(parent_executor.get_full_name())
+                    potential_executors.append(parent_executor.email)
 
             # Вариант 2: Наименее загруженные сотрудники
             least_loaded_employees = User.objects.annotate(
-                active_tasks_count=Count('tasks', filter=Q(tasks__status__in=[
-                    Task.status.in_process, Task.status.under_review
+                active_tasks_count=Count('executor_tasks', filter=Q(executor_tasks__status__in=[
+                    Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
                 ]))
             ).filter(active_tasks_count__lte=min_load + 2).order_by('active_tasks_count')
 
             for employee in least_loaded_employees[:3]:  # Топ-3 наименее загруженных
-                if employee.get_full_name() not in potential_executors:
-                    potential_executors.append(employee.get_full_name())
+                if employee.email not in potential_executors:
+                    potential_executors.append(employee.email)
 
             result.append({
                 'task_id': task.id,
@@ -180,9 +182,10 @@ class ImportantTasksAPIView(APIView):
                 'deadline': task.deadline,
                 'potential_executors': potential_executors,
                 'dependency_count': task.subtasks.filter(
-                    status__in=[Task.status.in_process, Task.status.under_review]
+                    status__in=[
+                        Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
+                    ]
                 ).count()
             })
 
         return Response(result)
-
