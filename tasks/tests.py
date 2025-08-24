@@ -18,6 +18,7 @@ class TaskTestCase(APITestCase):
             surname="Александров",
             patronymic="Александрович",
             password="12345",
+            position="team_leader",
         )
         self.client.force_authenticate(user=self.user)
 
@@ -106,6 +107,7 @@ class BusyEmployeesAPITestCase(APITestCase):
             name="Александр",
             surname="Александров",
             patronymic="Александрович",
+            position="team_leader",
             password="12345",
         )
         self.client.force_authenticate(user=self.user)
@@ -227,6 +229,7 @@ class ImportantTasksAPITestCase(APITestCase):
             name="Александр",
             surname="Александров",
             patronymic="Александрович",
+            position="team_leader",
             password = "12345",
         )
         self.client.force_authenticate(user=self.user)

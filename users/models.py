@@ -8,7 +8,7 @@ class User(AbstractUser):
     POSITION_CHOICES = [
         ('', '---------'),  # Пустой вариант
         ('employee', 'Сотрудник'),
-        ('team_leaders', 'Руководитель'),
+        ('team_leader', 'Руководитель'),
         ('director', 'Директор'),
     ]
 
