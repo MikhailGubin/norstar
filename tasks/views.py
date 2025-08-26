@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from tasks.models import Task
+from tasks.pagination import TasksPagination
 from tasks.serializer import TaskSerializer
 from tasks.services import EmployeeService, TaskService
 
@@ -30,7 +31,8 @@ class TaskOwnerListAPIView(ListAPIView):
     """Передаёт список заданий текущего Пользователя с пагинацией"""
 
     queryset = Task.objects.all()
-    serializer_class = TaskSerializer    
+    serializer_class = TaskSerializer
+    pagination_class = TasksPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -45,7 +47,7 @@ class TaskListAPIView(ListAPIView):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    # pagination_class = CustomPagination
+    pagination_class = TasksPagination
 
     # def get_queryset(self):
     #     user = self.request.user

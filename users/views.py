@@ -5,6 +5,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from users.models import User
+from users.pagination import UsersPagination
 from users.serializer import UserSerializer
 
 
@@ -31,6 +32,7 @@ class UserListAPIView(ListAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    pagination_class = UsersPagination
 
 
 class UserRetrieveAPIView(RetrieveAPIView):
