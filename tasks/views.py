@@ -1,13 +1,11 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.db.models import Count, Q
 from rest_framework.response import Response
 
 from tasks.models import Task
 from tasks.serializer import TaskSerializer
-from users.models import User
+from tasks.services import EmployeeService, TaskService
 
 
 class TaskCreateAPIView(CreateAPIView):
@@ -105,88 +103,12 @@ class BusyEmployeesAPIView(APIView):
     """Список сотрудников с количеством активных задач"""
 
     def get(self, request):
-        employees = User.objects.annotate(
-            active_tasks_count=Count('executor_tasks', filter=Q(executor_tasks__status__in=[
-                Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
-            ]))
-        ).order_by('-active_tasks_count')
-
-        data = []
-        for employee in employees:
-            data.append({
-                'id': employee.id,
-                'surname': employee.surname,
-                'name': employee.name,
-                'patronymic': employee.patronymic,
-                'email': employee.email,
-                'position': employee.position,
-                'active_tasks_count': employee.active_tasks_count,
-                'total_tasks_count': employee.executor_tasks.count()
-            })
-
+        data = EmployeeService.get_busy_employees()
         return Response(data)
-
 
 class ImportantTasksAPIView(APIView):
     """Важные задачи и рекомендуемые исполнители"""
 
     def get(self, request):
-        # 1. Находим важные задачи
-        important_tasks = Task.objects.filter(
-            status=Task.Status.CREATED,  # Не взяты в работу
-            subtasks__status__in=[
-                Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
-            ]  # Зависимости в работе
-        ).distinct()
-
-        # 2. Получаем статистику загрузки сотрудников
-        employee_stats = User.objects.annotate(
-            active_tasks_count=Count('executor_tasks', filter=Q(executor_tasks__status__in=[
-                Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
-            ]))
-        ).values('id', 'active_tasks_count')
-
-        # Находим минимальную загрузку
-        min_load = min([stat['active_tasks_count'] for stat in employee_stats], default=0)
-
-        result = []
-        for task in important_tasks:
-            # 3. Находим потенциальных исполнителей
-            potential_executors = []
-            added_emails = set()
-
-            # Вариант 1: Исполнитель родительской задачи
-            if task.parent and task.parent.executor:
-                parent_executor = task.parent.executor
-                executor_load = next(
-                    (stat['active_tasks_count'] for stat in employee_stats
-                     if stat['id'] == parent_executor.id), 0
-                )
-                if (executor_load <= min_load + 2 and
-                        parent_executor != task.executor and
-                        parent_executor != task.owner and
-                        parent_executor.email not in added_emails):
-                    potential_executors.append(parent_executor)
-                    added_emails.add(parent_executor.email)
-
-            # Вариант 2: Наименее загруженные сотрудники
-            least_loaded_employees = User.objects.annotate(
-                active_tasks_count=Count('executor_tasks', filter=Q(executor_tasks__status__in=[
-                    Task.Status.IN_PROCESS, Task.Status.UNDER_REVIEW, Task.Status.NEEDS_CLARIFICATION
-                ]))
-            ).filter(active_tasks_count__lte=min_load + 2).order_by('active_tasks_count')
-
-            for employee in least_loaded_employees[:5]:
-                if employee != task.executor and employee.email not in added_emails:
-                    potential_executors.append(
-                        f"{employee.surname} {employee.name} {employee.patronymic}".strip()
-                    )
-                    added_emails.add(employee.email)
-
-            result.append({
-                'Важная задача': task.task_name,
-                'Срок до': task.deadline.strftime('%Y-%m-%d %H:%M:%S'),
-                'Возможные исполнители': potential_executors,
-            })
-
+        result = TaskService.get_important_tasks_with_suggestions()
         return Response(result)
