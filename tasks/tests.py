@@ -6,11 +6,16 @@ from datetime import timedelta
 
 from tasks.models import Task
 from users.models import User
+from django.contrib.auth.models import Group
+
 
 class TaskTestCase(APITestCase):
 
     def setUp(self):
         """Создает базовый набор параметров для тестов для модели "Задание" """
+        # Создаем группу supervisor
+        self.supervisor_group, created = Group.objects.get_or_create(name='supervisor')
+
         # Создание Пользователя
         self.user = User.objects.create(
             email="admin@example.com",
@@ -20,6 +25,10 @@ class TaskTestCase(APITestCase):
             password="12345",
             position="team_leader",
         )
+        # Добавляем пользователя в группу supervisor
+        self.user.groups.add(self.supervisor_group)
+        self.user.save()
+        # Авторизуем пользователя
         self.client.force_authenticate(user=self.user)
 
         # Создание другого сотрудника
@@ -58,6 +67,7 @@ class TaskTestCase(APITestCase):
 
     def test_task_retrieve(self):
         """Проверяет процесс просмотра одного объекта класса "Задание" """
+
         url = reverse("tasks:task-retrieve", args=[self.task.pk])
 
         response = self.client.get(url)
@@ -117,15 +127,22 @@ class BusyEmployeesAPITestCase(APITestCase):
 
     def setUp(self):
         """Создание тестовых данных"""
-        # Создание авторизованного пользователя
+        # Создаем группу supervisor
+        self.supervisor_group, created = Group.objects.get_or_create(name='supervisor')
+
+        # Создание Пользователя
         self.user = User.objects.create(
             email="admin@example.com",
             name="Александр",
             surname="Александров",
             patronymic="Александрович",
-            position="team_leader",
             password="12345",
+            position="team_leader",
         )
+        # Добавляем пользователя в группу supervisor
+        self.user.groups.add(self.supervisor_group)
+        self.user.save()
+        # Авторизуем пользователя
         self.client.force_authenticate(user=self.user)
         
         # Создаем сотрудников
@@ -239,16 +256,24 @@ class ImportantTasksAPITestCase(APITestCase):
 
     def setUp(self):
         """Создание сложной структуры задач для тестирования"""
-        # Создание авторизованного пользователя
+        # Создаем группу supervisor
+        self.supervisor_group, created = Group.objects.get_or_create(name='supervisor')
+
+        # Создание Пользователя
         self.user = User.objects.create(
             email="admin@example.com",
             name="Александр",
             surname="Александров",
             patronymic="Александрович",
+            password="12345",
             position="team_leader",
-            password = "12345",
         )
+        # Добавляем пользователя в группу supervisor
+        self.user.groups.add(self.supervisor_group)
+        self.user.save()
+        # Авторизуем пользователя
         self.client.force_authenticate(user=self.user)
+
         # Создаем сотрудников
         self.user1 = User.objects.create(
             email="user1@example.com",

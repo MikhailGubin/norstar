@@ -16,7 +16,7 @@ class TaskCreateAPIView(CreateAPIView):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = (~IsSupervisor, IsAuthenticated)
+    permission_classes = (IsSupervisor, IsAuthenticated)
 
     @swagger_auto_schema(operation_summary="task-create")
     def create(self, request, *args, **kwargs):
@@ -66,7 +66,7 @@ class TaskRetrieveAPIView(RetrieveAPIView):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = (~IsSupervisor, IsAuthenticated)
+    permission_classes = (IsSupervisor, IsAuthenticated)
 
 
 class TaskUpdateAPIView(UpdateAPIView):
@@ -74,7 +74,7 @@ class TaskUpdateAPIView(UpdateAPIView):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = (~IsSupervisor, IsAuthenticated)
+    permission_classes = (IsSupervisor, IsAuthenticated)
 
     @swagger_auto_schema(
         operation_summary="task-full-update",
@@ -105,7 +105,8 @@ class TaskDestroyAPIView(DestroyAPIView):
 class BusyEmployeesAPIView(APIView):
     """Список сотрудников с количеством активных задач"""
 
-    permission_classes = (~IsSupervisor, IsAuthenticated)
+    permission_classes = (IsSupervisor, IsAuthenticated)
+    pagination_class = TasksPagination
 
     def get(self, request):
         data = EmployeeService.get_busy_employees()
@@ -114,7 +115,8 @@ class BusyEmployeesAPIView(APIView):
 class ImportantTasksAPIView(APIView):
     """Важные задачи и рекомендуемые исполнители"""
 
-    permission_classes = (~IsSupervisor, IsAuthenticated)
+    permission_classes = (IsSupervisor, IsAuthenticated)
+    pagination_class = TasksPagination
 
     def get(self, request):
         result = TaskService.get_important_tasks_with_suggestions()
