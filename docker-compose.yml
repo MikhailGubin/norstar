@@ -5,7 +5,7 @@ services:
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - DEBUG=${DEBUG}
-      - DB_HOST=${HOST}      -
+      - DB_HOST=${HOST}
       - DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       - REDIS_URL=redis://redis:6379/0
     volumes:
@@ -25,7 +25,6 @@ services:
     ports:
       - "80:80"
     volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf  # Основной конфиг
       - static_volume:/app/staticfiles:ro  # Статика Django
       - media_volume:/app/media:ro  # Медиа Django
     depends_on:

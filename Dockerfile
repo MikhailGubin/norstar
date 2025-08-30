@@ -24,8 +24,11 @@ RUN poetry config virtualenvs.create false && \
 # Копируем остальные файлы
 COPY . .
 
-# Создаем директории
-RUN mkdir -p staticfiles media
+#Создаю директорию для статических файлов
+RUN mkdir -p /app/static /app/staticfiles
+
+# Создаю директорию для медиафайлов
+RUN mkdir -p /app/media
 
 # Порты
 EXPOSE 8000

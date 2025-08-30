@@ -1,9 +1,14 @@
 # Используем официальный образ Nginx
-FROM nginx:latest
+FROM nginx:alpine
 
-RUN mkdir -p /app/staticfiles
+# Удаляем дефолтный конфиг
+RUN rm /etc/nginx/conf.d/default.conf
 
-COPY nginx.conf /etc/nginx/nginx.conf
+# Копируем наш конфиг в правильную директорию
+COPY nginx.conf /etc/nginx/conf.d/
+
+# Создаем директории для статики
+RUN mkdir -p /app/staticfiles /app/media
 
 # Открываем порт 80 для HTTP-трафика
 EXPOSE 80

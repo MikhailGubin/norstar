@@ -16,7 +16,6 @@ class UserCreateAPIView(CreateAPIView):
 
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = (IsAuthenticated, IsSupervisor)
 
     def perform_create(self, serializer):
         user = serializer.save()
