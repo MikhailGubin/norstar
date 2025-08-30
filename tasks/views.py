@@ -16,7 +16,7 @@ class TaskCreateAPIView(CreateAPIView):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = (IsSupervisor, IsAuthenticated)
+    permission_classes = (IsAuthenticated, IsSupervisor)
 
     @swagger_auto_schema(
         operation_id="task_create",
@@ -90,7 +90,7 @@ class TaskRetrieveAPIView(RetrieveAPIView):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = (IsSupervisor, IsAuthenticated)
+    permission_classes = (IsAuthenticated, IsSupervisor)
 
     @swagger_auto_schema(operation_id="task_retrieve")
     def get(self, request, *args, **kwargs):
@@ -102,7 +102,7 @@ class TaskUpdateAPIView(UpdateAPIView):
 
     queryset = Task.objects.all()
     serializer_class = TaskSerializer
-    permission_classes = (IsSupervisor, IsAuthenticated)
+    permission_classes = (IsAuthenticated, IsSupervisor)
 
     @swagger_auto_schema(
         operation_id="task_full_update",
@@ -137,7 +137,7 @@ class TaskDestroyAPIView(DestroyAPIView):
 class BusyEmployeesAPIView(APIView):
     """Список сотрудников с количеством активных задач"""
 
-    permission_classes = (IsSupervisor, IsAuthenticated)
+    permission_classes = (IsAuthenticated, IsSupervisor)
     pagination_class = TasksPagination
 
     @swagger_auto_schema(
@@ -155,7 +155,7 @@ class BusyEmployeesAPIView(APIView):
 class ImportantTasksAPIView(APIView):
     """Важные задачи и рекомендуемые исполнители"""
 
-    permission_classes = (IsSupervisor, IsAuthenticated)
+    permission_classes = (IsAuthenticated, IsSupervisor)
     pagination_class = TasksPagination
 
     @swagger_auto_schema(

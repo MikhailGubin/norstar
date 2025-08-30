@@ -8,7 +8,6 @@ from tasks.models import Task
 from users.models import User
 from django.contrib.auth.models import Group
 
-
 class TaskTestCase(APITestCase):
 
     def setUp(self):
@@ -57,8 +56,8 @@ class TaskTestCase(APITestCase):
             "status": f"{Task.Status.IN_PROCESS}"
         }
         # Создаем задачи (в работе)
-        self.task1 = Task.objects.create(
-            task_name="Дочерняя задача 1",
+        self.task_active = Task.objects.create(
+            task_name="Активная задача 1",
             owner=self.user,
             executor=self.other_user,
             deadline=timezone.now() + timedelta(days=3),
@@ -115,8 +114,8 @@ class TaskTestCase(APITestCase):
         )
 
     def test_task_update(self):
-        """Проверяет процесс создания одного объекта класса "Задание" """
-        url = reverse("tasks:task-update", args=(self.task1.pk,))
+        """Проверяет, что нельзя менять исполнителя во время выполнения задания"""
+        url = reverse("tasks:task-update", args=(self.task_active.pk,))
         data = {"executor": 2}
         response = self.client.patch(url, data, format="json")
 
@@ -430,3 +429,74 @@ class ImportantTasksAPITestCase(APITestCase):
 
         # Не должно быть важных задач
         self.assertEqual(len(data), 0)
+
+
+class TaskCreationAuthTestCase(APITestCase):
+    """Комплексные тесты аутентификации при создании задач"""
+
+    def setUp(self):
+        # Создаем группу supervisor
+        self.supervisor_group, created = Group.objects.get_or_create(name='supervisor')
+
+        self.supervisor_user = User.objects.create(
+            email='supervisor@example.com',
+            password='pass123',
+            name='Руководитель',
+            surname='Проекта',
+            position='team_lead',
+        )
+        # Добавляем пользователя в группу supervisor
+        self.supervisor_user.groups.add(self.supervisor_group)
+        self.supervisor_user.save()
+
+        # Создаем тестовых пользователей
+        self.regular_user = User.objects.create(
+            email='regular@example.com',
+            password='pass123',
+            name='Обычный',
+            surname='Сотрудник',
+            position='developer'
+        )
+
+        # Создаем исполнителя для задач
+        self.executor_user = User.objects.create(
+            email='executor@example.com',
+            password='pass123',
+            name='Исполнитель',
+            surname='Тестовый',
+            position='developer'
+        )
+
+        self.task_data = {
+            "name": "Тестовая задача для проверки прав",
+            "description": "Проверка различных сценариев аутентификации",
+            "deadline": timezone.now() + timedelta(days=4),
+            "executor": self.executor_user.id,  # Будем устанавливать динамически
+            "status": "created"
+        }
+        self.url = reverse('tasks:task-create')
+
+    def test_unauthenticated_user_cannot_create_task(self):
+        """Неавторизованный пользователь получает 401 ошибку"""
+        response = self.client.post(self.url, self.task_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json()['detail'], 'Authentication credentials were not provided.')
+
+    def test_regular_user_cannot_create_task(self):
+        """Обычный пользователь получает 403 ошибку"""
+        self.client.force_authenticate(user=self.regular_user)
+
+        response = self.client.post(self.url, self.task_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json()['detail'], 'Вы не состоите в группе руководителей')
+
+    def test_task_creation_with_invalid_token(self):
+        """Проверка с невалидным токеном"""
+        self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid_token_123')
+
+        response = self.client.post(self.url, self.task_data, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.json()['detail'], 'Authentication credentials were not provided.')
