@@ -60,7 +60,7 @@ class TaskListAPIView(ListAPIView):
 
     @swagger_auto_schema(
         operation_id="tasks",
-        operation_summary="Список заданий. Для работников видны только их задания. Для руководителей видны все задания",
+        operation_summary="Список заданий. Для руководителей видны все задания, а для работников - только их задания.",
         responses={200: TaskSerializer(many=True), 400: "Неверные параметры запроса"},
     )
     def get(self, request, *args, **kwargs):
