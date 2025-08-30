@@ -90,8 +90,6 @@ class UserDestroyAPIView(DestroyAPIView):
 
 class CustomTokenRefreshView(TokenRefreshView):
 
-    permission_classes = (IsAuthenticated,)
-
     @swagger_auto_schema(
         operation_id="user_token_refresh",
         operation_summary="Обновляет пару access/refresh токенов, используя валидный refresh токен.",
@@ -121,8 +119,6 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-
-    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_id="user_login",
