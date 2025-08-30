@@ -477,7 +477,7 @@ class TaskCreationAuthTestCase(APITestCase):
         self.url = reverse('tasks:task-create')
 
     def test_unauthenticated_user_cannot_create_task(self):
-        """Неавторизованный пользователь получает 401 ошибку"""
+        """Неавторизованный пользователь получает ошибку авторизации"""
         response = self.client.post(self.url, self.task_data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

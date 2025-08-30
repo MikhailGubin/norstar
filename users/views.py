@@ -3,10 +3,12 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework.permissions import IsAuthenticated
 
 from users.models import User
 from users.pagination import UsersPagination
 from users.serializer import UserSerializer
+from users.permissions import IsSupervisor, IsOwner
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -14,7 +16,7 @@ class UserCreateAPIView(CreateAPIView):
 
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated, IsSupervisor)
 
     def perform_create(self, serializer):
         user = serializer.save()
@@ -36,6 +38,7 @@ class UserListAPIView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = UsersPagination
+    permission_classes = (IsAuthenticated, )
 
     @swagger_auto_schema(
         operation_id="users",
@@ -54,6 +57,7 @@ class UserRetrieveAPIView(RetrieveAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, )
 
     @swagger_auto_schema(operation_id="user_retrieve")
     def get(self, request, *args, **kwargs):
@@ -65,6 +69,7 @@ class UserUpdateAPIView(UpdateAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, IsSupervisor | IsOwner )
 
     @swagger_auto_schema(
         operation_id="user_full_update",
@@ -86,6 +91,7 @@ class UserDestroyAPIView(DestroyAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, IsSupervisor)
 
     @swagger_auto_schema(
         operation_id="user_delete",
@@ -96,6 +102,9 @@ class UserDestroyAPIView(DestroyAPIView):
 
 
 class CustomTokenRefreshView(TokenRefreshView):
+
+    permission_classes = (IsAuthenticated, )
+
     @swagger_auto_schema(
         operation_id="user_token_refresh",
         operation_summary="Обновляет пару access/refresh токенов, используя валидный refresh токен.",
@@ -125,6 +134,9 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
+
+    permission_classes = (IsAuthenticated, )
+
     @swagger_auto_schema(
         operation_id="user_login",
         operation_summary="Позволяет пользователю аутентифицироваться, используя имя пользователя и пароль, "
@@ -155,7 +167,4 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         },
     )
     def post(self, request, *args, **kwargs):
-        """
-        Переопределяем метод post для применения декоратора swagger_auto_schema.
-        """
         return super().post(request, *args, **kwargs)
