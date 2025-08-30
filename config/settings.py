@@ -26,8 +26,7 @@ INSTALLED_APPS = [
     "users",
     "tasks",
     "rest_framework",
-    "drf_yasg"
-
+    "drf_yasg",
 ]
 
 MIDDLEWARE = [
@@ -95,7 +94,7 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 STATICFILES_DIRS = []
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
@@ -112,13 +111,13 @@ SIMPLE_JWT = {
 ALLOWED_HOSTS = ["*"]
 
 SWAGGER_SETTINGS = {
-    'USE_SESSION_AUTH': False,
+    "USE_SESSION_AUTH": False,
     "SECURITY_DEFINITIONS": {
         "Basic": {"type": "basic"},
         "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"},
     },
-    'APIS_SORTER': 'alpha',
-    'OPERATIONS_SORTER': 'alpha',
-    'DOC_EXPANSION': 'none',
-    'DEFAULT_INFO': 'config.urls.swagger_info',
+    "APIS_SORTER": "alpha",
+    "OPERATIONS_SORTER": "alpha",
+    "DOC_EXPANSION": "none",
+    "DEFAULT_INFO": "config.urls.swagger_info",
 }

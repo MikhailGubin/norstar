@@ -6,10 +6,10 @@ class User(AbstractUser):
     """Переопределяю модель 'Пользователь'"""
 
     POSITION_CHOICES = [
-        ('', '---------'),  # Пустой вариант
-        ('employee', 'Сотрудник'),
-        ('team_leader', 'Руководитель'),
-        ('director', 'Директор'),
+        ("", "---------"),  # Пустой вариант
+        ("employee", "Сотрудник"),
+        ("team_leader", "Руководитель"),
+        ("director", "Директор"),
     ]
 
     username = None
@@ -46,28 +46,28 @@ class User(AbstractUser):
         max_length=100,
         choices=POSITION_CHOICES,
         blank=True,  # Разрешаем пустое значение
-        default='',  # Значение по умолчанию
+        default="",  # Значение по умолчанию
         verbose_name="Должность",
         help_text="Укажите должность",
     )
     surname = models.CharField(
         max_length=30,
         blank=True,
-        default='',
+        default="",
         verbose_name="Фамилия",
         help_text="Укажите Фамилию",
     )
     name = models.CharField(
         max_length=30,
         blank=True,
-        default='',
+        default="",
         verbose_name="Имя",
         help_text="Укажите имя",
     )
     patronymic = models.CharField(
         max_length=30,
         blank=True,
-        default='',
+        default="",
         verbose_name="Отчество",
         help_text="Укажите отчество",
     )

@@ -11,6 +11,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ("id", "email", "name", "surname", "patronymic", "position", "password", "avatar", "phone", "city")
         validators = [
             serializers.UniqueTogetherValidator(
-                fields=["email", "name", "surname", "patronymic",],
-                queryset=User.objects.all()),
+                fields=[
+                    "email",
+                    "name",
+                    "surname",
+                    "patronymic",
+                ],
+                queryset=User.objects.all(),
+            ),
         ]

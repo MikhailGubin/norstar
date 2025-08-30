@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from tasks.models import Task
-from tasks.validators import DeadlineValidator, ParentTaskValidator, ExecutorTaskValidator
+from tasks.validators import DeadlineValidator, ExecutorTaskValidator, ParentTaskValidator
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -25,17 +25,14 @@ class TaskSerializer(serializers.ModelSerializer):
             "time_updated",
             "time_started",
             "time_completed",
-            "description"
+            "description",
         ]
-        read_only_fields = ["owner", 'time_created', 'time_updated', 'time_started', 'time_completed']
+        read_only_fields = ["owner", "time_created", "time_updated", "time_started", "time_completed"]
         validators = [
             DeadlineValidator(field="deadline"),
             ParentTaskValidator(field="parent"),
         ]
 
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["executor"].validators.append(
-            ExecutorTaskValidator(field="executor", instance=self.instance)
-        )
+        self.fields["executor"].validators.append(ExecutorTaskValidator(field="executor", instance=self.instance))

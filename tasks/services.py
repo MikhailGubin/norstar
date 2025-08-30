@@ -1,5 +1,12 @@
-from tasks.utils import get_employees_with_task_count, format_employee_data, get_important_tasks, get_employee_stats, \
-    get_min_workload, get_potential_executors, format_important_task_data
+from tasks.utils import (
+    format_employee_data,
+    format_important_task_data,
+    get_employee_stats,
+    get_employees_with_task_count,
+    get_important_tasks,
+    get_min_workload,
+    get_potential_executors,
+)
 
 
 class EmployeeService:

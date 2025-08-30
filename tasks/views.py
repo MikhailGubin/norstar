@@ -1,14 +1,14 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from tasks.models import Task
 from tasks.pagination import TasksPagination
 from tasks.serializer import TaskSerializer
 from tasks.services import EmployeeService, TaskService
-from users.permissions import IsSupervisor, IsOwner
+from users.permissions import IsOwner, IsSupervisor
 
 
 class TaskCreateAPIView(CreateAPIView):
@@ -18,10 +18,7 @@ class TaskCreateAPIView(CreateAPIView):
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated, IsSupervisor)
 
-    @swagger_auto_schema(
-        operation_id="task_create",
-        operation_summary="Создание нового задания"
-    )
+    @swagger_auto_schema(operation_id="task_create", operation_summary="Создание нового задания")
     def post(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
@@ -41,10 +38,7 @@ class TaskOwnerListAPIView(ListAPIView):
     @swagger_auto_schema(
         operation_id="owners",
         operation_summary="Список заданий, созданных данным пользователем",
-        responses={
-            200: TaskSerializer(many=True),
-            400: "Неверные параметры запроса"
-        }
+        responses={200: TaskSerializer(many=True), 400: "Неверные параметры запроса"},
     )
     def get(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -67,10 +61,7 @@ class TaskListAPIView(ListAPIView):
     @swagger_auto_schema(
         operation_id="tasks",
         operation_summary="Список заданий. Для работников видны только их задания. Для руководителей видны все задания",
-        responses={
-            200: TaskSerializer(many=True),
-            400: "Неверные параметры запроса"
-        }
+        responses={200: TaskSerializer(many=True), 400: "Неверные параметры запроса"},
     )
     def get(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -104,17 +95,11 @@ class TaskUpdateAPIView(UpdateAPIView):
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated, IsSupervisor)
 
-    @swagger_auto_schema(
-        operation_id="task_full_update",
-        operation_summary="Полное обновление задачи"
-    )
+    @swagger_auto_schema(operation_id="task_full_update", operation_summary="Полное обновление задачи")
     def put(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
-    @swagger_auto_schema(
-        operation_id="task_partial_update",
-        operation_summary="Частичное обновление задачи"
-    )
+    @swagger_auto_schema(operation_id="task_partial_update", operation_summary="Частичное обновление задачи")
     def patch(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
 
@@ -126,10 +111,7 @@ class TaskDestroyAPIView(DestroyAPIView):
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated, IsOwner)
 
-    @swagger_auto_schema(
-        operation_id="task_delete",
-        operation_summary="Удаление задачи"
-                         )
+    @swagger_auto_schema(operation_id="task_delete", operation_summary="Удаление задачи")
     def delete(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
@@ -143,14 +125,12 @@ class BusyEmployeesAPIView(APIView):
     @swagger_auto_schema(
         operation_id="busy_employees",
         operation_summary="Список сотрудников с количеством активных задач",
-        responses={
-            200: TaskSerializer(many=True),
-            400: "Неверные параметры запроса"
-        }
+        responses={200: TaskSerializer(many=True), 400: "Неверные параметры запроса"},
     )
     def get(self, request):
         data = EmployeeService.get_busy_employees()
         return Response(data)
+
 
 class ImportantTasksAPIView(APIView):
     """Важные задачи и рекомендуемые исполнители"""
@@ -161,10 +141,7 @@ class ImportantTasksAPIView(APIView):
     @swagger_auto_schema(
         operation_id="important_tasks",
         operation_summary="Список важных задач и рекомендуемых исполнителей",
-        responses={
-            200: TaskSerializer(many=True),
-            400: "Неверные параметры запроса"
-        }
+        responses={200: TaskSerializer(many=True), 400: "Неверные параметры запроса"},
     )
     def get(self, request):
         result = TaskService.get_important_tasks_with_suggestions()

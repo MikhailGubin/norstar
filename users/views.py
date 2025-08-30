@@ -1,14 +1,13 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from rest_framework.permissions import IsAuthenticated
 
 from users.models import User
 from users.pagination import UsersPagination
+from users.permissions import IsOwner, IsSupervisor
 from users.serializer import UserSerializer
-from users.permissions import IsSupervisor, IsOwner
 
 
 class UserCreateAPIView(CreateAPIView):
@@ -23,10 +22,7 @@ class UserCreateAPIView(CreateAPIView):
         user.is_active = True
         user.save()
 
-    @swagger_auto_schema(
-        operation_id="user_register",
-        operation_summary="Создание нового Пользователя"
-    )
+    @swagger_auto_schema(operation_id="user_register", operation_summary="Создание нового Пользователя")
     def post(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
@@ -37,15 +33,12 @@ class UserListAPIView(ListAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     pagination_class = UsersPagination
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_id="users",
         operation_summary="Список Пользователей",
-        responses={
-            200: UserSerializer(many=True),
-            400: "Неверные параметры запроса"
-        }
+        responses={200: UserSerializer(many=True), 400: "Неверные параметры запроса"},
     )
     def get(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
@@ -56,7 +49,7 @@ class UserRetrieveAPIView(RetrieveAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(operation_id="user_retrieve")
     def get(self, request, *args, **kwargs):
@@ -68,18 +61,16 @@ class UserUpdateAPIView(UpdateAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated, IsSupervisor | IsOwner )
+    permission_classes = (IsAuthenticated, IsSupervisor | IsOwner)
 
     @swagger_auto_schema(
-        operation_id="user_full_update",
-        operation_summary="Полностью обновляет данные о Пользователе."
+        operation_id="user_full_update", operation_summary="Полностью обновляет данные о Пользователе."
     )
     def put(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
     @swagger_auto_schema(
-        operation_id="user_partial_update",
-        operation_summary="Частично обновляет данные о Пользователе."
+        operation_id="user_partial_update", operation_summary="Частично обновляет данные о Пользователе."
     )
     def patch(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
@@ -92,17 +83,14 @@ class UserDestroyAPIView(DestroyAPIView):
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated, IsSupervisor)
 
-    @swagger_auto_schema(
-        operation_id="user_delete",
-        operation_summary="Удаление Пользователя"
-    )
+    @swagger_auto_schema(operation_id="user_delete", operation_summary="Удаление Пользователя")
     def delete(self, request, *args, **kwargs):
         return super().destroy(request, *args, **kwargs)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
 
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_id="user_token_refresh",
@@ -134,7 +122,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
 
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     @swagger_auto_schema(
         operation_id="user_login",
