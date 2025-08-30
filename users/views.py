@@ -22,8 +22,11 @@ class UserCreateAPIView(CreateAPIView):
         user.is_active = True
         user.save()
 
-    @swagger_auto_schema(operation_summary="users_register")
-    def create(self, request, *args, **kwargs):
+    @swagger_auto_schema(
+        operation_id="user_register",
+        operation_summary="Создание нового Пользователя"
+    )
+    def post(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
 
 
@@ -34,12 +37,27 @@ class UserListAPIView(ListAPIView):
     serializer_class = UserSerializer
     pagination_class = UsersPagination
 
+    @swagger_auto_schema(
+        operation_id="users",
+        operation_summary="Список Пользователей",
+        responses={
+            200: UserSerializer(many=True),
+            400: "Неверные параметры запроса"
+        }
+    )
+    def get(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 class UserRetrieveAPIView(RetrieveAPIView):
     """Передаёт представление определённого объекта класса 'Пользователь'"""
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    @swagger_auto_schema(operation_id="user_retrieve")
+    def get(self, request, *args, **kwargs):
+        return super().retrieve(request, *args, **kwargs)
 
 
 class UserUpdateAPIView(UpdateAPIView):
@@ -49,16 +67,18 @@ class UserUpdateAPIView(UpdateAPIView):
     serializer_class = UserSerializer
 
     @swagger_auto_schema(
-        operation_summary="users_full_update", operation_description="Полностью обновляет данные о Пользователе."
+        operation_id="user_full_update",
+        operation_summary="Полностью обновляет данные о Пользователе."
     )
-    def update(self, request, *args, **kwargs):
+    def put(self, request, *args, **kwargs):
         return super().update(request, *args, **kwargs)
 
     @swagger_auto_schema(
-        operation_summary="users_patch", operation_description="Частично обновляет данные о Пользователе."
+        operation_id="user_partial_update",
+        operation_summary="Частично обновляет данные о Пользователе."
     )
     def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
+        return super().partial_update(request, *args, **kwargs)
 
 
 class UserDestroyAPIView(DestroyAPIView):
@@ -67,15 +87,18 @@ class UserDestroyAPIView(DestroyAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @swagger_auto_schema(operation_summary="users_delete")
+    @swagger_auto_schema(
+        operation_id="user_delete",
+        operation_summary="Удаление Пользователя"
+    )
     def delete(self, request, *args, **kwargs):
-        return super().delete(request, *args, **kwargs)
+        return super().destroy(request, *args, **kwargs)
 
 
 class CustomTokenRefreshView(TokenRefreshView):
     @swagger_auto_schema(
-        operation_summary="users_token_refresh",
-        operation_description="Обновляет пару access/refresh токенов, используя валидный refresh токен.",
+        operation_id="user_token_refresh",
+        operation_summary="Обновляет пару access/refresh токенов, используя валидный refresh токен.",
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             properties={
@@ -103,8 +126,8 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     @swagger_auto_schema(
-        operation_summary="users_token_obtain",
-        operation_description="Позволяет пользователю аутентифицироваться, используя имя пользователя и пароль, "
+        operation_id="user_login",
+        operation_summary="Позволяет пользователю аутентифицироваться, используя имя пользователя и пароль, "
         "и получить access/refresh токены.",
         # Описание тела запроса (request_body)
         request_body=openapi.Schema(
