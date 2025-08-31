@@ -30,6 +30,9 @@ RUN mkdir -p /app/static /app/staticfiles
 # Создаю директорию для медиафайлов
 RUN mkdir -p /app/media
 
+# После установки зависимостей
+RUN python manage.py collectstatic --noinput
+
 # Порты
 EXPOSE 8000
 

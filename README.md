@@ -61,24 +61,24 @@ cd <название_папки_проекта>
 ```
 ### Настройка переменных окружения
 
-Скопируйте файл .env.example и заполните его:
+    Скопируйте файл .env.example и заполните его:
 
 ```
 cp .env.sample
 ```
 
-Откройте .env в текстовом редакторе и настройте переменные.
+    Откройте .env в текстовом редакторе и настройте переменные.
 
 
-Совет: Для генерации SECRET_KEY вы можете использовать команду Python:
+    Совет: Для генерации SECRET_KEY вы можете использовать команду Python:
 
 ```
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 ```
 
 ### Запуск проекта
-С помощью Docker Compose
-Для запуска всех сервисов (PostgreSQL, Redis, Django Web):
+    С помощью Docker Compose
+    Для запуска всех сервисов (PostgreSQL, Redis, Django Web):
 
 ```
 docker-compose up -d --build
@@ -87,19 +87,30 @@ docker-compose up -d --build
 ### Проверка работоспособности
 
 #### Веб-приложение
-Откройте браузер и перейдите по адресу: http://localhost:8000
+    Для доступа к веб-интерфейсу приложения откройте браузер и перейдите по адресу: http://localhost:8000
+
+
+#### Тестирование
+
+    Для запуска тестов и проверки корректности работы всех компонентов выполните команду:
+
+```
+docker-compose exec web python manage.py test
+```
 
 #### Сервисы
     PostgreSQL:
     к базе данных, используя переменные из вашего `.env` файла:
     postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}
-    Проверьте логи контейнера: 
+    Проверьте логи контейнера:
+
 ```
 docker-compose logs db
 ```
 
     Redis:
     Проверьте логи контейнера: 
+
 ```
 docker-compose logs redis
 ```

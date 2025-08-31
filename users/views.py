@@ -1,7 +1,7 @@
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.generics import CreateAPIView, DestroyAPIView, ListAPIView, RetrieveAPIView, UpdateAPIView
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from users.models import User
@@ -15,6 +15,7 @@ class UserCreateAPIView(CreateAPIView):
 
     serializer_class = UserSerializer
     queryset = User.objects.all()
+    permission_classes = (AllowAny,)
 
     def perform_create(self, serializer):
         user = serializer.save()
@@ -119,6 +120,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
+    permission_classes = (AllowAny,)
 
     @swagger_auto_schema(
         operation_id="user_login",
