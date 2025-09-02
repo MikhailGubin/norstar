@@ -52,7 +52,10 @@ class UserRetrieveAPIView(RetrieveAPIView):
     serializer_class = UserSerializer
     permission_classes = (IsAuthenticated,)
 
-    @swagger_auto_schema(operation_id="user_retrieve")
+    @swagger_auto_schema(
+        operation_id="user_retrieve",
+        operation_summary="Предоставляет всю информацию о выбранном Пользователе",
+    )
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 

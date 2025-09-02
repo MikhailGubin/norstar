@@ -9,6 +9,18 @@ from tasks.pagination import TasksPagination
 from tasks.serializer import TaskSerializer
 from tasks.services import EmployeeService, TaskService
 from users.permissions import IsOwner, IsSupervisor
+from django.shortcuts import get_object_or_404
+from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.views import APIView
+
+
+class IndexList(APIView):
+    renderer_classes = [TemplateHTMLRenderer]
+    template_name = 'index.html'
+
+    def get(self, request):
+        text = "Добро пожаловать в трекер задач Norstar"
+        return Response({'text': text})
 
 
 class TaskCreateAPIView(CreateAPIView):
@@ -83,7 +95,10 @@ class TaskRetrieveAPIView(RetrieveAPIView):
     serializer_class = TaskSerializer
     permission_classes = (IsAuthenticated, IsSupervisor)
 
-    @swagger_auto_schema(operation_id="task_retrieve")
+    @swagger_auto_schema(
+        operation_id="task_retrieve",
+        operation_summary="Предоставляет всю информацию о выбранном задании",
+    )
     def get(self, request, *args, **kwargs):
         return super().retrieve(request, *args, **kwargs)
 

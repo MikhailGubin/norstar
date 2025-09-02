@@ -4,7 +4,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 from django.conf.urls.static import static
-
+from tasks import views
 from config import settings
 
 schema_view = get_schema_view(
@@ -22,6 +22,7 @@ schema_view = get_schema_view(
 
 
 urlpatterns = [
+    path("", views.IndexList.as_view(), name="index"),
     path("admin/", admin.site.urls),
     path("tasks/", include("tasks.urls", namespace="tasks")),
     path("users/", include("users.urls", namespace="users")),
