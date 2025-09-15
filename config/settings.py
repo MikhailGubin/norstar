@@ -11,7 +11,7 @@ load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+DEBUG = True if os.getenv("DATABASE_DEBUG") == "True" else False
 
 
 # Application definition
