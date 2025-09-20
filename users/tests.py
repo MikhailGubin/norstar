@@ -9,7 +9,7 @@ from users.models import User
 class UserTestCase(APITestCase):
 
     def setUp(self):
-        """Создает базовый набор параметров для тестов для модели "habit" """
+        """Создает базовый набор параметров для тестов для модели "User" """
         # Создаем группу supervisor
         self.supervisor_group, created = Group.objects.get_or_create(name="supervisor")
 
