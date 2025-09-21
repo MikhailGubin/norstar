@@ -98,7 +98,7 @@ class TaskTestCase(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-        # Проверяем, что привычка действительно удалена из базы данных
+        # Проверяем, что задание действительно удалено из базы данных
         self.assertFalse(Task.objects.filter(id=self.task.pk).exists())
 
     def test_create_task_validation_error_duration(self):
